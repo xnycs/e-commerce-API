@@ -91,6 +91,7 @@ class UserController extends Controller
 
         if (Auth::attempt($credentials)) {
             $user = auth()->user();
+            $user['token'] = $user->createToken('MyAppToken')->plainTextToken;
             return response()->json(['user' => $user, 'message' => 'Login successful']);
         }
 
@@ -133,5 +134,10 @@ class UserController extends Controller
                 'message' => $e->getMessage(),
             ], 500); // 500 Internal Server Error status code
         }
+    }
+
+    public function checkToken() {
+        
+        return auth()->user();
     }
 }

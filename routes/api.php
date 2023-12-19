@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\UserController;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -26,8 +27,9 @@ Route::post('/register', [UserController::class, 'register']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
-    Route::get('/user', function (Request $request) {
-        return $request->user();
+    Route::get('/user', function () {
+        return User::get();
     });
 
+    Route::get('/check-token', [UserController::class, 'checkToken']);
 });
