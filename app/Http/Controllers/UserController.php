@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Register;
+use App\Models\RegisterSkill;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -100,7 +102,7 @@ class UserController extends Controller
     }
 
     public function register(Request $request) {
-
+        /*
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users|max:255',
@@ -134,6 +136,56 @@ class UserController extends Controller
                 'message' => $e->getMessage(),
             ], 500); // 500 Internal Server Error status code
         }
+        */
+
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:registers|max:255',
+            'skills' => 'required'
+        ]);
+
+        // return $validatedData;
+        try {
+            DB::beginTransaction();
+
+            // query builder
+            DB::table('registers')->insert([
+                'name' => $validatedData['name'],
+                'email' => $validatedData['email']
+            ]);
+
+            $register = Register::where('email', $validatedData['email'])->first();
+
+            // ->where('title', 'Example')->delete();
+
+            $skills = [1,4,5];
+
+            DB::table('register_skills')->where('register_id', $register->id)->delete();
+
+            foreach ($skills as $skill) {
+
+                DB::table('register_skills')->insert([
+                    'register_id' => $register->id,
+                    'skill_id' => $skill
+                ]);
+            }
+         
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Registration successfully!',
+            ], 201); // 201 Created status code
+
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'error' => 'Registration failed.',
+                'message' => $e->getMessage(),
+            ], 500); // 500 Internal Server Error status code
+        }
+
     }
 
     public function checkToken() {
